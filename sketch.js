@@ -1,15 +1,15 @@
-let width = 1920;
-let height = 900;
+let height = 990;
+let width = Math.floor((16 / 9) * height);
 
 let borderX = 50
 let borderY = 50;
 
 let tree = null;
 let treeValues = [];
-let valueCount = 50;
+let valueCount = 24;
 let positions = [];
 
-let maxLevel = 1 + Math.floor(Math.log2(valueCount)) + 1;
+let maxLevel = (1 + Math.floor(Math.log2(valueCount))) + 1;
 let nodeCount = Math.pow(2, maxLevel) - 1;
 
 let gap = 5;
@@ -52,14 +52,12 @@ function setup() {
 }
 
 let index = 0;
-let visited_nodes = [];
 let insertion_valid = 1;
 
 function draw() {
   background(255);
-
   if (insertion_valid && index < treeValues.length)
-      visited_nodes = tree.addNode(treeValues[index++]);
+      tree.addNode(treeValues[index++]);
 
   insertion_valid = tree.update();
   tree.display(nodeDiameter);

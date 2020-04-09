@@ -1,134 +1,199 @@
+let RED = '#FF0000';
+let BLACK = '#000000';
+
+let LEFT = 0;
+let RIGHT = 1;
+
 class Tree {
     constructor()
     { this.root = null; }
 
     addNode(value) {
-        let temp = this.insert(this.root, value);
-        this.root = temp[0];
+        console.log('Adding', value);
 
-        return temp[1];
+        this.root = this.insert(this.root, value, 0);
+        this.root.setColour(BLACK);
     }
 
-    insert(node, value, pos = 0) {
-        if(node == null) {
-            let new_node = new Node(value, pos);
-            return [new_node, [new_node]];
-        }
-
-        let nodes = [];
-        if (value < node.value) {
-            let temp = this.insert(node.left, value, 2*pos + 1);
-            node.left = temp[0];
-            nodes = temp[1];
-        }
-        else if(value > node.value) {
-            let temp = this.insert(node.right, value, 2*pos + 2);
-            node.right = temp[0];
-            nodes = temp[1];
-        }
-
-        nodes.push(node);
-        node = this.balance(node);
-
-        return [node, nodes];
-    }
-
-    balance(node) {
-        let delta = node.heightDifference();
-        if (delta > 1) {
-            delta = node.left.heightDifference();
-
-            if(delta > 0)
-                node = this.rightRotate(node);
-            else
-                node = this.leftRightRotate(node);
-        }
-
-        if(delta < -1) {
-            delta = node.right.heightDifference();
-
-            if(delta < 0)
-                node = this.leftRotate(node);
-            else
-                node = this.rightLeftRotate(node);
-        }
-
-        node.updateHeight();
-        return node;
+    getColour(node) {
+        if(node == null)
+            return BLACK;
+        return node.colour;
     }
 
     leftOf(pos)
     { return 2*pos + 1; }
 
+    getLeft(node) {
+        if(node == null)
+            return null;
+        return node.left
+    }
+
     rightOf(pos)
     { return 2*pos + 2; }
+
+    getRight(node) {
+        if(node == null)
+            return null;
+        return node.right;
+    }
 
     parentOf(pos)
     { return floor((pos - 1)/2); }
 
     rightRotate(x) {
-        let y = x.left;
-        x.left = y.right;
-        y.right = x;
+        let y = this.getLeft(x);
+        x.setLeft(this.getRight(y));
+        y.setRight(x);
 
-        x.updateHeight();
-        y.updateHeight();
+        x.setColour(RED);
+        y.setColour(BLACK);
 
         y.updatePosition(this.parentOf(y.pos));
-
         return y;
     }
 
     leftRightRotate(x) {
-        x.left = this.leftRotate(x.left);
+        x.setLeft(this.leftRotate(this.getLeft(x)));
         return this.rightRotate(x);
     }
 
     leftRotate(x) {
-      let y = x.right;
-      x.right = y.left;
-      y.left = x;
+        let y = this.getRight(x);
+        x.setRight(this.getLeft(y));
+        y.setLeft(x);
 
-      x.updateHeight();
-      y.updateHeight();
+        x.setColour(RED);
+        y.setColour(BLACK);
 
-      y.updatePosition(this.parentOf(y.pos));
-
-      return y;
+        y.updatePosition(this.parentOf(y.pos));
+        return y;
     }
 
     rightLeftRotate(x) {
-        x.right = this.rightRotate(x.right);
+        x.setRight(this.rightRotate(this.getRight(x)));
         return this.leftRotate(x);
     }
 
-    traverse()
-    { this.root.traverse(); }
+    insert(node, value, pos) {
+        if(node == null)
+            return new Node(value, pos);
 
-    display(size)
-    { this.root.display(size); }
+        if(value < node.value) {
+            let left = this.insert(node.left, value, 2*pos + 1);
+            node.setLeft(left);
+        }
 
-    update()
-    { return this.root.update(); }
+        else {
+            let right = this.insert(node.right, value, 2*pos + 2);
+            node.setRight(right);
+        }
+
+        let g = node;
+        if(this.getColour(g) == RED)
+            return g;
+
+        let p = null;
+        let u = null;
+        let x = null;
+
+        let first_imbalance;
+        let second_imbalance;
+
+        if(value < g.value) {
+            p = g.left;
+            u = g.right;
+            first_imbalance = LEFT;
+        }
+        else {
+            p = g.right;
+            u = g.left;
+            first_imbalance = RIGHT;
+        }
+
+        if(this.getColour(p) == BLACK)
+            return g;
+
+        if(value < p.value) {
+            x = p.left;
+            second_imbalance = LEFT;
+        }
+        else {
+            x = p.right;
+            second_imbalance = RIGHT;
+        }
+
+        if(this.getColour(x) == BLACK)
+            return g;
+
+        if(this.getColour(u) == RED) {
+            g.setColour(RED);
+            p.setColour(BLACK);
+            u.setColour(BLACK);
+        }
+
+        else {
+            if(first_imbalance == LEFT) {
+                if(second_imbalance == LEFT)
+                    g = this.rightRotate(g);
+                else
+                    g = this.leftRightRotate(g);
+            }
+
+            else {
+                if(second_imbalance == RIGHT)
+                    g = this.leftRotate(g);
+                else
+                    g = this.rightLeftRotate(g);
+            }
+        }
+
+        return g;
+    }
+
+    traverse() {
+        if (this.root != null)
+            this.root.traverse();
+    }
+
+    display(size) {
+        if (this.root != null)
+            this.root.display(size);
+    }
+
+    update() {
+        if (this.root != null)
+            return this.root.update();
+        return 0;
+    }
 }
 
 class Node {
     constructor(value, pos) {
         this.value = value;
+        this.colour = RED;
         this.pos = pos;
 
         this.left = null;
         this.right = null;
 
-        this.x = random(width);
+        this.x = width/2;
         this.y = -height/10;
 
         this.vx = 0;
         this.vy = 0;
         this.updatePosition(this.pos);
-
-        this.height = 1;
     }
+
+    setColour(colour)
+    {   this.colour = colour; }
+
+    setLeft(left)
+    {  this.left = left; }
+
+    setRight(right)
+    { this.right = right; }
 
     update() {
         this.x += this.vx;
@@ -158,7 +223,7 @@ class Node {
         if(this.pos < positions.length)
             target_pos = positions[this.pos];
         else
-            console.log('Node has exceeded maximum allowed depth');
+            console.log(this.pos, 'has exceeded maximum allowed depth');
 
         this.vx = (target_pos[0] - this.x) / animationSteps;
         this.vy = (target_pos[1] - this.y) / animationSteps;
@@ -169,51 +234,34 @@ class Node {
             this.right.updatePosition(2*this.pos + 2);
     }
 
-    heightDifference() {
-        let delta = 0;
-
-        if (this.left != null)
-            delta += this.left.height;
-
-        if (this.right != null)
-          delta -= this.right.height;
-
-        return delta;
-    }
-
-    updateHeight() {
-        let height = 0;
-
-        if (this.left != null)
-            height = max(height, this.left.height);
-        if (this.right != null)
-            height = max(height, this.right.height);
-
-        this.height = 1 + height;
-    }
-
     traverse() {
         if (this.left != null)
             this.left.traverse();
 
-        print(this.value);
+        print(this.value, this.colour);
 
         if (this.right != null)
             this.right.traverse();
     }
 
     display(size) {
+        stroke(0);
         if (this.left != null) {
             line(this.x, this.y, this.left.x, this.left.y);
             this.left.display(size);
         }
+
+        stroke(0);
         if (this.right != null) {
             line(this.x, this.y, this.right.x, this.right.y);
             this.right.display(size);
         }
+
         fill(255);
-            circle(this.x, this.y, size);
-        fill(0);
-            text(this.value, this.x, this.y);
+        stroke(this.colour);
+        circle(this.x, this.y, size);
+
+        fill(this.colour);
+        text(this.value, this.x, this.y);
     }
 }
