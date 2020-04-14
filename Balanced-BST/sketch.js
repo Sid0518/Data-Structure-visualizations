@@ -1,12 +1,14 @@
-let width = 1440;
+let AVL = 0;
+let RB = 1;
+let treeType = RB;  // set this to AVL or RB
+
+let width = 1800;
 let height = Math.floor((9 / 16) * width);
 
 let borderX = 50
 let borderY = 50;
 
 let tree = null;
-let AVL = 0;
-let RB = 1;
 
 let treeValues = [];
 let valueCount = 36;
@@ -34,7 +36,6 @@ function setup() {
     fill(255);
     stroke(0, 0, 0);
 
-    let treeType = AVL;  // set this to AVL or RB
     if (treeType == AVL)
         tree = new AVLTree(nodeDiameter);
     else if (treeType == RB)

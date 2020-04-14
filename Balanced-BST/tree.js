@@ -17,7 +17,7 @@ class GenericTree {
     {   return new GenericNode(value);  }
 
     addNode(value) {
-        let nodes = this.insert(this.root, value, 0);
+        let nodes = this.insert(this.root, value);
 
         this.root = nodes[nodes.length - 1];
         this.root.updatePositions(rbegin, rwidth, rx, ry);
@@ -158,7 +158,7 @@ class RedBlackTree extends GenericTree {
     }
 
     addNode(value) {
-        let nodes = super.addNode(value);
+	      let nodes = super.addNode(value);
         this.root.colour = BLACK;
 
         return nodes;
@@ -242,26 +242,28 @@ class RedBlackTree extends GenericTree {
         }
 
         g.updateHeight();
-        tree.root.colour = BLACK;
 
         return [g, true];
     }
 
     rightRotate(x) {
+        x.colour = RED;
         let y = super.rightRotate(x);
-
         y.colour = BLACK;
-        y.right.colour = RED;
 
         return y;
     }
 
     leftRotate(x) {
+        x.colour = RED;
         let y = super.leftRotate(x);
-
         y.colour = BLACK;
-        y.left.colour = RED;
 
         return y;
+    }
+
+    update() {
+        this.root.colour = BLACK;
+        super.update();
     }
 }
