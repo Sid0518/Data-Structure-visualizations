@@ -46,8 +46,6 @@ class GenericTree {
 
         if (!changesMade)
             this.lastOperation = null;
-
-        return changesMade;
     }
 
     resolveInsertionRotation() {
@@ -61,10 +59,8 @@ class GenericTree {
             if (this.rotations.length > 0)
                 parent = this.rotations[this.rotations.length - 1];
 
-            if (this.applyInsertionFix(node, parent)) {
-                this.relocate();
+            if (this.applyInsertionFix(node, parent))
                 return true;
-            }
         }
         return false;
     }

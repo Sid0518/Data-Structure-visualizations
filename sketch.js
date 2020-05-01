@@ -18,8 +18,8 @@ let buttonEnabled = true;
 
 let textBox;
 
-function clearTree() 
-{    tree.root.relocateSubtree(width/2, height + tree.s, width);    }
+function clearTree()
+{   tree.root.relocateSubtree(width/2, height + tree.s, width);   }
 
 function selectTree() {
     if (treeType == 'AVL')
@@ -57,6 +57,7 @@ function activateButtons() {
 
 function performRotations() {
     tree.performRotation();
+    tree.relocate();
     tree.removeRedundantRotations();
 
     if (tree.hasPendingRotations())
