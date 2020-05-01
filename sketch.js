@@ -1,107 +1,175 @@
-let AVL = 0;
-let RB = 1;
-let treeType = RB;  // set this to AVL or RB
+let treeType = 'RB';  // set this to AVL or RB
 
-let width = 1800;
-let height = Math.floor((9 / 16) * width);
-
-let borderX = 50
-let borderY = 50;
+let width, height;
+let borderX, borderY;
 
 let tree = null;
 
-let treeValues = [];
-let valueCount = 36;
+let gap = 10;
+let size, levelGap;
 
-let level = 5;
-
-let gap = 2;
-let n = Math.pow(2, level - 1);
-let nodeDiameter = ((width - 2*borderX) - (n - 1) * gap) / n;
-let levelGap = (height - 2*borderY) / (level + 2);
-
-let rbegin = borderX;
-let rwidth = (width - 2*borderX);
-let rx = (width / 2);
-let ry = borderY + levelGap;
+let rx, ry, rwidth;
 
 let FPS = 60;
-let pauseTime = 0.4; // between 0 and 1 second
-let animSteps = FPS * (1 - pauseTime);
+
+let insertButton, removeButton;
+let buttonEnabled = true;
+
+let textBox;
+
+function clearTree()
+{   tree.root.relocateSubtree(width/2, height + tree.s, width);    }
+
+function selectTree() {
+    if (treeType == 'AVL')
+        tree = new AVLTree(size);
+    else if (treeType == 'RB')
+        tree =  new RedBlackTree(size);
+
+    activateButtons();
+}
+
+function toggleTree() {
+    buttonEnabled = false;
+
+    if (treeType == 'AVL')
+        treeType = 'RB';
+    else if (treeType == 'RB')
+        treeType = 'AVL';
+
+    if (tree != null && tree.root != null) {
+        clearTree();
+        window.setTimeout(selectTree, 1000);
+    }
+
+    else
+        selectTree();
+}
+
+function activateButtons() {
+    buttonEnabled = true;
+    textBox.elt.focus();
+}
+
+function performRotations() {
+    tree.performRotation();
+    tree.removeRedundantRotations();
+
+    if (tree.hasPendingRotations())
+        window.setTimeout(performRotations, 1000);
+    else
+        window.setTimeout(activateButtons, 1000);
+}
+
+function insertNode() {
+    if (buttonEnabled) {
+        buttonEnabled = false;
+
+        let value = parseInt(textBox.value());
+        textBox.value('');
+
+        if (!isNaN(value)) {
+            tree.addNode(value);
+            tree.relocate();
+        }
+
+        else
+            alert('Please enter an integer.');
+
+        tree.removeRedundantRotations();
+        if (tree.hasPendingRotations())
+            window.setTimeout(performRotations, 1000);
+        else
+            window.setTimeout(activateButtons, 1000);
+    }
+}
+
+function removeNode() {
+    if (buttonEnabled) {
+        buttonEnabled = false;
+
+        let value = parseInt(textBox.value());
+        textBox.value('');
+
+        if (!isNaN(value)) {
+            tree.removeNode(value);
+            tree.relocate();
+        }
+
+        else
+            alert('Please enter an integer');
+
+        tree.removeRedundantRotations();
+        if (tree.hasPendingRotations())
+            window.setTimeout(performRotations, 1000);
+        else
+            window.setTimeout(activateButtons, 1000);
+    }
+}
 
 function setup() {
+    width = windowWidth;
+    height = windowHeight;
     createCanvas(width, height);
-    background(255, 255, 255);
 
-    fill(255);
-    stroke(0, 0, 0);
-
-    if (treeType == AVL)
-        tree = new AVLTree(nodeDiameter);
-    else if (treeType == RB)
-        tree =  new RedBlackTree(nodeDiameter);
-    else
-        tree = new GenericTree(nodeDiameter);
-
-    for (var i = 0; i < valueCount; i++)
-      treeValues[i] = floor(random(0, 200));
+    borderX = 0.025 * width;
+    borderY = 0.025 * height;
 
     textAlign(CENTER, CENTER);
+
+    let level = 5;
+    let n = Math.pow(2, level - 1);
+    size = ((width - 2*borderX) - (n - 1) * gap) / n;
+    levelGap = (height - 2*borderY) / (level + 2);
+
+    rx = (width / 2);
+    ry = (borderY + levelGap + size/2);
+    rwidth = (width - 2*borderX);
+
+    toggleButton = createButton('Change Tree');
+    insertButton = createButton('Insert');
+    removeButton = createButton('Remove');
+    textBox = createInput();
+
+    let elements = [toggleButton, textBox, insertButton, removeButton];
+
+    let W = 0.4 * width;
+    let w = 2*W / (3*elements.length + 1);
+    let h = levelGap - borderY;
+
+    let x = (width - W + w)/2;
+    let y = borderY;
+
+    for (let element of elements) {
+        element.size(w, h);
+        element.position(x, y);
+        element.style('font-size', h/5 + 'px');
+        element.style('text-align', 'center');
+
+        x += 1.5*w;
+    }
+
+    toggleButton.mousePressed(toggleTree);
+    insertButton.mousePressed(insertNode);
+    removeButton.mousePressed(removeNode);
+
+    selectTree();
 
     frameRate(FPS);
 }
 
-let index = 0;
-let nodes = [];
-let frame = 0;
-
 function draw() {
     background(255);
 
-    if (frame % FPS == 0) {
-        let rotation_made = false;
-        let node = null;
+    let level = max(5, tree.height);
+    let n = Math.pow(2, level - 1);
 
-        while (nodes.length > 0) {
-            node = nodes.shift();
-            [node, rotation_made] = tree.applyFix(node);
+    size = ((width - 2*borderX) - (n - 1) * gap) / n;
+    levelGap = (height - 2*borderY) / (level + 2);
+    ry = (borderY + levelGap + size/2);
 
-            if(rotation_made) {
-                if (nodes.length > 0) {
-                    let parent = nodes[0];
-                    if (node.value < parent.value)
-                        parent.left = node;
-                    else
-                        parent.right = node;
-                }
-
-                else
-                    tree.root = node;
-
-                tree.root.updatePositions(rbegin, rwidth, rx, ry);
-                nodes.unshift(node);
-                break;
-            }
-        }
-
-        if(!rotation_made) {
-            if (tree.root != null && tree.root.height > level) {
-                level = tree.root.height;
-
-                nodeDiameter = (nodeDiameter - gap) / 2;
-                levelGap = height / (level + 2);
-                ry = levelGap;
-
-                tree.updateSize(nodeDiameter);
-            }
-
-            if(index < treeValues.length)
-                nodes = tree.addNode(treeValues[index++]);
-        }
-    }
+    tree.resize(size);
 
     tree.update();
     tree.display();
-
-    ++frame;
 }

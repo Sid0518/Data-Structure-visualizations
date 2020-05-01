@@ -12,23 +12,24 @@ class GenericNode {
         this.nx = this.x;
         this.ny = this.y;
 
-        this.vx = 0;
-        this.vy = 0;
+        this.highlighted = false;
+    }
 
-        this.begin = 0;
-        this.width = width;
+    getInorderSuccs() {
+        let succ = this.right;
+        let succs = [succ];
+
+        while (succ.left != null) {
+            succ = succ.left;
+            succs.push(succ);
+        }
+
+        return succs;
     }
 
     update() {
-        this.x += this.vx;
-        this.y += this.vy;
-
-        let dx = abs(this.nx - this.x);
-        let dy = abs(this.ny - this.y);
-        if (dx < 1 && dy < 1) {
-            this.vx = 0;
-            this.vy = 0;
-        }
+        this.x = lerp(this.x, this.nx, 0.05);
+        this.y = lerp(this.y, this.ny, 0.05);
 
         if (this.left != null)
             this.left.update();
@@ -36,32 +37,24 @@ class GenericNode {
             this.right.update();
     }
 
-    updatePositions(begin, width, nx, ny) {
-        this.begin = begin;
-        this.width = width;
-
+    relocateSubtree(nx, ny, width = null) {
         this.nx = nx;
         this.ny = ny;
 
-        this.vx = (this.nx - this.x) / animSteps;
-        this.vy = (this.ny - this.y) / animSteps;
-
         if (this.left != null) {
-            let cbegin = begin;
             let cwidth = (width / 2);
             let cnx = nx - (width / 4);
             let cny = ny + levelGap;
 
-            this.left.updatePositions(cbegin, cwidth, cnx, cny);
+            this.left.relocateSubtree(cnx, cny, cwidth);
         }
 
         if (this.right != null) {
-            let cbegin = begin + (width / 2);
             let cwidth = (width / 2);
             let cnx = nx + (width / 4);
             let cny = ny + levelGap;
 
-            this.right.updatePositions(cbegin, cwidth, cnx, cny);
+            this.right.relocateSubtree(cnx, cny, cwidth);
         }
     }
 
@@ -92,11 +85,19 @@ class GenericNode {
     display(size) {
         fill(255);
         stroke(0);
-            circle(this.x, this.y, size);
+        strokeWeight(5);
+
+        if (this.highlighted)
+            stroke(80, 128, 255);
+
+        circle(this.x, this.y, size);
 
         fill(0);
+        stroke(0);
+        strokeWeight(1);
         textSize(size / 2);
-            text(this.value, this.x, this.y);
+
+        text(this.value, this.x, this.y);
     }
 
     displaySubtree(size) {
@@ -137,6 +138,7 @@ class RedBlackNode extends GenericNode {
     constructor(value) {
         super(value);
         this.colour = RED;
+        this.displayColour = RED;
     }
 
     print()
@@ -144,11 +146,19 @@ class RedBlackNode extends GenericNode {
 
     display(size) {
         fill(255);
-        stroke(this.colour);
-            circle(this.x, this.y, size);
+        stroke(this.colour, 0, 0);
+        strokeWeight(5);
 
-        fill(this.colour);
+        if (this.highlighted)
+            stroke(80, 128, 255);
+
+        circle(this.x, this.y, size);
+
+        fill(this.colour, 0, 0);
+        stroke(this.colour, 0, 0);
+        strokeWeight(1);
         textSize(size / 2);
-            text(this.value, this.x, this.y);
+
+        text(this.value, this.x, this.y);
     }
 }

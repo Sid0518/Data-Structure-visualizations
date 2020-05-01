@@ -1,56 +1,203 @@
-let RED = '#FF0000';
-let BLACK = '#000000';
+let RED = 255;
+let BLACK = 0;
 
 let LEFT = 0;
 let RIGHT = 1;
 
+let INSERT = 0;
+let DELETE = 1;
+
 class GenericTree {
     constructor(size) {
         this.root = null;
+        this.height = 0;
 
         this.s = size;
         this.ns = this.s;
-        this.vs = 0;
+
+        this.rotations = [];
+        this.lastOperation = null;
+
+        this.deletedNode = null;
     }
+
+    invalid(node)
+    {   return false;   }
+
+    hasPendingRotations()
+    {   return (this.rotations.length > 0);   }
+
+    removeRedundantRotations() {
+        while (this.hasPendingRotations()) {
+            let node = this.rotations[this.rotations.length - 1];
+            if (this.invalid(node))
+                break;
+            this.rotations.pop();
+        }
+    }
+
+    performRotation() {
+        let changesMade = false;
+        if (this.lastOperation == INSERT)
+            changesMade = this.resolveInsertionRotation();
+
+        else if (this.lastOperation == DELETE)
+            changesMade = this.resolveDeletionRotation();
+
+        if (!changesMade)
+            this.lastOperation = null;
+
+        return changesMade;
+    }
+
+    resolveInsertionRotation() {
+        let node = null;
+        let parent = null;
+
+        while (this.rotations.length > 0) {
+            node = this.rotations.pop();
+
+            parent = null;
+            if (this.rotations.length > 0)
+                parent = this.rotations[this.rotations.length - 1];
+
+            if (this.applyInsertionFix(node, parent)) {
+                this.relocate();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    resolveDeletionRotation()
+    {   return this.resolveInsertionRotation();   }
 
     newNode(value)
     {   return new GenericNode(value);  }
 
     addNode(value) {
-        let nodes = this.insert(this.root, value);
-
-        this.root = nodes[nodes.length - 1];
-        this.root.updatePositions(rbegin, rwidth, rx, ry);
-
-        return nodes;
+        this.insert(value);
+        this.lastOperation = INSERT;
+        this.height = this.root.height;
     }
 
-    insert(node, value) {
-        if(node == null)
-            return [this.newNode(value)];
+    removeNode(value) {
+        this.delete(value);
+        this.lastOperation = DELETE;
 
-        let nodes = [];
-        if(value < node.value) {
-            nodes = this.insert(node.left, value);
+        if (this.root != null)
+            this.height = this.root.height;
+        else
+            this.height = 0;
+    }
 
-            let left = nodes[nodes.length - 1];
-            node.left = left;
+    insert(value) {
+        let y = null;
+        let x = this.root;
+
+        while(x != null) {
+            this.rotations.push(x);
+            y = x;
+
+            if (value < x.value)
+                x = x.left;
+            else
+                x = x.right;
         }
+
+        if (y == null)
+            this.root = this.newNode(value);
+        else {
+            if (value < y.value)
+                y.left = this.newNode(value);
+            else
+                y.right = this.newNode(value);
+            y.updateHeight();
+        }
+    }
+
+    delete(value) {
+        let y = null;
+        let x = this.root;
+
+        while(x != null) {
+            if (value == x.value)
+                break;
+
+            this.rotations.push(x);
+            y = x;
+
+            if (value < x.value)
+                x = x.left;
+            else
+                x = x.right;
+        }
+
+        if (x != null) {
+            let ds = null;
+
+            if (x.left != null && x.right != null)
+                ds = x.getInorderSuccs();
+
+            let deletedNode = null;
+            let parent = null;
+
+            if (ds == null) {
+                deletedNode = x;
+                parent = y;
+            }
+
+            else {
+                deletedNode = ds.pop();
+                x.value = deletedNode.value;
+
+                this.rotations.concat(ds);
+
+                parent = x;
+                if (ds.length > 0)
+                    parent = ds.pop();
+            }
+
+            let child = null;
+
+            if (deletedNode.left != null)
+                child = deletedNode.left;
+            else if (deletedNode.right != null)
+                child = deletedNode.right;
+
+            if (parent == null)
+                this.root = child;
+            else {
+                if (deletedNode == parent.left)
+                    parent.left = child;
+                else
+                    parent.right = child;
+            }
+
+            deletedNode.left = null;
+            deletedNode.right = null;
+            this.deletedNode = deletedNode;
+        }
+    }
+
+    joinWithParent(node, parent) {
+        if (parent == null)
+            this.root = node;
 
         else {
-            nodes = this.insert(node.right, value);
-
-            let right = nodes[nodes.length - 1];
-            node.right = right;
+            if (node.value < parent.value)
+                parent.left = node;
+            else
+                parent.right = node;
+            parent.updateHeight();
         }
-        nodes.push(node);
-
-        return nodes;
     }
 
-    applyFix(node) {
+    applyInsertionFix(node, parent) {
+        this.joinWithParent(node, parent);
         node.updateHeight();
-        return [null, false];
+
+        return false;
     }
 
     rightRotate(x) {
@@ -93,32 +240,43 @@ class GenericTree {
     display() {
         if (this.root != null)
             this.root.displaySubtree(this.s);
+
+        if (this.deletedNode != null)
+            this.deletedNode.display(this.s);
     }
 
     update() {
-        this.s += this.vs;
-
-        let ds = abs(this.ns - this.s);
-        if (ds < 1) {
-            this.vs = 0;
-            this.s = this.ns;
-        }
+        this.s = lerp(this.s, this.ns, 0.05);
 
         if (this.root != null)
             this.root.update();
+
+        if (this.deletedNode != null)
+            this.deletedNode.update();
     }
 
-    updateSize(size) {
-        this.ns = size;
-        this.vs = (this.ns - this.s) / animSteps;
+    relocate() {
+        if (this.root != null) {
+            this.root.relocateSubtree(rx, ry, rwidth);
+            this.height = this.root.height;
+        }
+
+        if (this.deletedNode != null)
+            this.deletedNode.relocateSubtree(width/2, height + this.s);
     }
+
+    resize(size)
+    {   this.ns = size;   }
 }
 
 class AVLTree extends GenericTree {
     newNode(value)
     {   return new AVLNode(value);  }
 
-    applyFix(node) {
+    invalid(node)
+    {   return abs(node.heightDifference()) > 1;  }
+
+    applyInsertionFix(node, parent) {
         let delta = node.heightDifference();
         let rotation_made = (delta > 1 || delta < -1);
 
@@ -127,9 +285,10 @@ class AVLTree extends GenericTree {
 
             if(delta > 0)
                 node = this.rightRotate(node);
-            else
+            else {
                 node.left = this.leftRotate(node.left);
-                // delay a full 2-step rotation
+                this.rotations.push(node);
+            }
         }
 
         if(delta < -1) {
@@ -137,17 +296,49 @@ class AVLTree extends GenericTree {
 
             if(delta < 0)
                 node = this.leftRotate(node);
-            else
+            else {
                 node.right = this.rightRotate(node.right);
-                // delay a full 2-step rotation
+                this.rotations.push(node);
+            }
         }
-        node.updateHeight();
 
-        return [node, rotation_made];
+        node.updateHeight();
+        this.joinWithParent(node, parent);
+
+        return rotation_made;
     }
 }
 
 class RedBlackTree extends GenericTree {
+    constructor(size) {
+        super(size);
+        this.doubleBlack = null;
+    }
+
+    invalid(node) {
+        if (this.doubleBlack != null)
+            return true;
+
+        if (node == null || this.getColour(node) == RED)
+            return false;
+
+        if (this.getColour(node.left) == RED) {
+            if (this.getColour(node.left.left) == RED)
+                return true;
+            if (this.getColour(node.left.right) == RED)
+                return true;
+        }
+
+        if (this.getColour(node.right) == RED) {
+            if (this.getColour(node.right.left) == RED)
+                return true;
+            if (this.getColour(node.right.right) == RED)
+                return true;
+        }
+
+        return false;
+    }
+
     newNode(value)
     {   return new RedBlackNode(value); }
 
@@ -158,18 +349,110 @@ class RedBlackTree extends GenericTree {
     }
 
     addNode(value) {
-	      let nodes = super.addNode(value);
-        this.root.colour = BLACK;
-
-        return nodes;
+        super.addNode(value);
+        if (this.root != null)
+            this.root.colour = BLACK;
     }
 
-    applyFix(node) {
+    removeNode(value) {
+        this.delete(value);
+        this.lastOperation = DELETE;
+
+        if (this.root != null)
+            this.root.colour = BLACK;
+    }
+
+    delete(value) {
+        let y = null;
+        let x = this.root;
+
+        while(x != null) {
+            if (value == x.value)
+                break;
+
+            this.rotations.push(x);
+            y = x;
+
+            if (value < x.value)
+                x = x.left;
+            else
+                x = x.right;
+        }
+
+        if (x != null) {
+            let ds = null;
+
+            if (x.left != null && x.right != null)
+                ds = x.getInorderSuccs();
+
+            let deletedNode = null;
+            let parent = null;
+
+            if (ds == null) {
+                deletedNode = x;
+                parent = this.rotations.pop();
+            }
+
+            else {
+                deletedNode = ds.pop();
+                x.value = deletedNode.value;
+
+                ds.unshift(x);
+                parent = ds.pop();
+
+                this.rotations = this.rotations.concat(ds);
+            }
+
+            let child = null;
+
+            if (deletedNode.left != null)
+                child = deletedNode.left;
+            else if (deletedNode.right != null)
+                child = deletedNode.right;
+
+            if (parent == null) {
+                this.root = child;
+                this.doubleBlack = null;
+            }
+
+            else {
+                let doubleBlack =
+                  (this.getColour(deletedNode) == BLACK &&
+                   this.getColour(child) == BLACK);
+
+                if (deletedNode == parent.left) {
+                    parent.left = child;
+                    if (doubleBlack)
+                        this.doubleBlack = LEFT;
+                }
+                else {
+                    parent.right = child;
+                    if (doubleBlack)
+                        this.doubleBlack = RIGHT;
+                }
+
+                this.rotations.push(parent);
+            }
+
+            if (child != null)
+                child.colour = BLACK;
+
+            deletedNode.left = null;
+            deletedNode.right = null;
+            this.deletedNode = deletedNode;
+        }
+    }
+
+    applyInsertionFix(node, parent) {
         let g = node;
+
+        if (g == null)
+            return false;
+
         g.updateHeight();
 
-        if(g == null || this.getColour(g) == RED)
-            return [g, false];
+        if(this.getColour(g) == RED)
+            return false;
 
         let p = null;
         let u = null;
@@ -213,7 +496,7 @@ class RedBlackTree extends GenericTree {
         }
 
         if(first_imbalance == null || second_imbalance == null)
-            return [g, false];
+            return false;
 
         if(this.getColour(u) == RED) {
             g.colour = RED;
@@ -228,6 +511,11 @@ class RedBlackTree extends GenericTree {
                 else {
                     g.left = this.leftRotate(g.left);
                     g.left.colour = RED;
+                    this.rotations.push(g);
+
+                    g.updateHeight();
+
+                    return true;
                 }
             }
 
@@ -237,16 +525,158 @@ class RedBlackTree extends GenericTree {
                 else {
                     g.right = this.rightRotate(g.right);
                     g.right.colour = RED;
+                    this.rotations.push(g);
+
+                    g.updateHeight();
+
+                    return true;
                 }
             }
         }
 
         g.updateHeight();
+        super.joinWithParent(g, parent);
+        return true;
+    }
 
-        return [g, true];
+    applyDeletionFix(node, parent) {
+        let p = node;
+
+        if (p == null) {
+            this.doubleBlack = null;
+            return false;
+        }
+
+        p.updateHeight();
+        this.joinWithParent(node, parent);
+
+        let x = null;
+        let s = null;
+
+        if (this.doubleBlack == LEFT) {
+            x = p.left;
+            s = p.right;
+        }
+
+        else if (this.doubleBlack == RIGHT) {
+            x = p.right;
+            s = p.left;
+        }
+
+        else {
+            this.doubleBlack = null;
+            return false;
+        }
+
+        if (this.getColour(s) == RED) {
+            if (this.doubleBlack == LEFT) {
+                p = this.leftRotate(p);
+
+                this.rotations.push(p);
+                this.rotations.push(p.left);
+            }
+
+            else {
+                p = this.rightRotate(p);
+
+                this.rotations.push(p);
+                this.rotations.push(p.right);
+            }
+
+            this.joinWithParent(p, parent);
+            return true;
+        }
+
+        let n1 = null;
+        let n2 = null;
+
+        if (s != null) {
+            n1 = s.left;
+            n2 = s.right;
+        }
+
+        if (this.getColour(n1) == BLACK && this.getColour(n2) == BLACK) {
+            if (s != null)
+                s.colour = RED;
+
+            if (p.colour == BLACK) {
+                if (parent == null)
+                    this.doubleBlack = null;
+                else {
+                    if (p == parent.left)
+                        this.doubleBlack = LEFT;
+                    else
+                        this.doubleBlack = RIGHT;
+                }
+            }
+
+            else {
+                p.colour = BLACK;
+                this.doubleBlack = null;
+            }
+
+            this.joinWithParent(p, parent);
+            return true;
+        }
+
+        if (this.getColour(n2) == BLACK && this.doubleBlack == LEFT) {
+            p.right = this.rightRotate(p.right);
+            this.rotations.push(p);
+
+            return true;
+        }
+
+        else if (this.getColour(n1) == BLACK && this.doubleBlack == RIGHT) {
+            p.left = this.leftRotate(p.left);
+            this.rotations.push(p);
+
+            return true;
+        }
+
+        else {
+            let pColour = p.colour;
+
+            if (this.doubleBlack == LEFT) {
+                p = super.leftRotate(p);
+                p.colour = pColour;
+                p.left.colour = BLACK;
+                n2.colour = BLACK;
+            }
+
+            else {
+                p = super.rightRotate(p);
+                p.colour = pColour;
+                p.right.colour = BLACK;
+                n1.colour = BLACK;
+            }
+
+            this.doubleBlack = null;
+        }
+
+        this.joinWithParent(p, parent);
+        return true;
+    }
+
+    resolveDeletionRotation() {
+        let node = null;
+        let parent = null;
+
+        while (this.rotations.length > 0) {
+            node = this.rotations.pop();
+
+            let parent = null;
+            if (this.rotations.length > 0)
+                parent = this.rotations[this.rotations.length - 1];
+
+            if (this.applyDeletionFix(node, parent))
+                return true;
+        }
+
+        return false;
     }
 
     rightRotate(x) {
+        // Rotation is identical to AVL, but recolouring is also required
         x.colour = RED;
         let y = super.rightRotate(x);
         y.colour = BLACK;
@@ -255,6 +685,7 @@ class RedBlackTree extends GenericTree {
     }
 
     leftRotate(x) {
+      // Rotation is identical to AVL, but recolouring is also required
         x.colour = RED;
         let y = super.leftRotate(x);
         y.colour = BLACK;
@@ -263,7 +694,8 @@ class RedBlackTree extends GenericTree {
     }
 
     update() {
-        this.root.colour = BLACK;
+        if (this.root != null)
+            this.root.colour = BLACK;
         super.update();
     }
 }
