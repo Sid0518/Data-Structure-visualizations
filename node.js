@@ -11,8 +11,6 @@ class GenericNode {
 
         this.nx = this.x;
         this.ny = this.y;
-
-        this.highlighted = false;
     }
 
     getInorderSuccs() {
@@ -37,7 +35,7 @@ class GenericNode {
             this.right.update();
     }
 
-    relocateSubtree(nx, ny, width = null) {
+    relocateSubtree(nx, ny, width) {
         this.nx = nx;
         this.ny = ny;
 
@@ -83,14 +81,12 @@ class GenericNode {
     }
 
     display(size) {
-        fill(255);
         stroke(0);
-        strokeWeight(5);
 
-        if (this.highlighted)
-            stroke(80, 128, 255);
-
+        fill(0);
         circle(this.x, this.y, size);
+        fill(255);
+        circle(this.x, this.y, size*0.95);
 
         fill(0);
         stroke(0);
@@ -145,14 +141,12 @@ class RedBlackNode extends GenericNode {
     {   console.log('RedBlackNode:', this.value, this.colour);  }
 
     display(size) {
-        fill(255);
         stroke(this.colour, 0, 0);
-        strokeWeight(5);
 
-        if (this.highlighted)
-            stroke(80, 128, 255);
-
+        fill(this.colour, 0, 0);
         circle(this.x, this.y, size);
+        fill(255);
+        circle(this.x, this.y, size*0.95);
 
         fill(this.colour, 0, 0);
         stroke(this.colour, 0, 0);

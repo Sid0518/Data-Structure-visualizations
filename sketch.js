@@ -5,6 +5,7 @@ let borderX, borderY;
 
 let tree = null;
 
+let level = 5;
 let gap = 10;
 let size, levelGap;
 
@@ -17,33 +18,36 @@ let buttonEnabled = true;
 
 let textBox;
 
-function clearTree()
-{   tree.root.relocateSubtree(width/2, height + tree.s, width);    }
+function clearTree() 
+{    tree.root.relocateSubtree(width/2, height + tree.s, width);    }
 
 function selectTree() {
     if (treeType == 'AVL')
         tree = new AVLTree(size);
     else if (treeType == 'RB')
         tree =  new RedBlackTree(size);
-
-    activateButtons();
 }
 
 function toggleTree() {
-    buttonEnabled = false;
+    if (buttonEnabled) {
+        buttonEnabled = false;
 
-    if (treeType == 'AVL')
-        treeType = 'RB';
-    else if (treeType == 'RB')
-        treeType = 'AVL';
+        if (treeType == 'AVL')
+            treeType = 'RB';
+        else if (treeType == 'RB')
+            treeType = 'AVL';
 
-    if (tree != null && tree.root != null) {
-        clearTree();
-        window.setTimeout(selectTree, 1000);
+        if (tree != null && tree.root != null) {
+            clearTree();
+            window.setTimeout(selectTree, 1000);
+            window.setTimeout(activateButtons, 1000);
+        }
+
+        else {
+            selectTree();
+            activateButtons();
+        }
     }
-
-    else
-        selectTree();
 }
 
 function activateButtons() {
@@ -117,7 +121,6 @@ function setup() {
 
     textAlign(CENTER, CENTER);
 
-    let level = 5;
     let n = Math.pow(2, level - 1);
     size = ((width - 2*borderX) - (n - 1) * gap) / n;
     levelGap = (height - 2*borderY) / (level + 2);
@@ -125,6 +128,8 @@ function setup() {
     rx = (width / 2);
     ry = (borderY + levelGap + size/2);
     rwidth = (width - 2*borderX);
+
+    selectTree();
 
     toggleButton = createButton('Change Tree');
     insertButton = createButton('Insert');
@@ -152,8 +157,7 @@ function setup() {
     toggleButton.mousePressed(toggleTree);
     insertButton.mousePressed(insertNode);
     removeButton.mousePressed(removeNode);
-
-    selectTree();
+    textBox.elt.focus();
 
     frameRate(FPS);
 }
@@ -161,14 +165,17 @@ function setup() {
 function draw() {
     background(255);
 
-    let level = max(5, tree.height);
-    let n = Math.pow(2, level - 1);
+    let newLevel = max(5, tree.height);
+    if (level != newLevel) {
+        level = newLevel;
+        let n = Math.pow(2, level - 1);
 
-    size = ((width - 2*borderX) - (n - 1) * gap) / n;
-    levelGap = (height - 2*borderY) / (level + 2);
-    ry = (borderY + levelGap + size/2);
+        size = ((width - 2*borderX) - (n - 1) * gap) / n;
+        levelGap = (height - 2*borderY) / (level + 2);
+        ry = (borderY + levelGap + size/2);
 
-    tree.resize(size);
+        tree.resize(size);
+    }
 
     tree.update();
     tree.display();

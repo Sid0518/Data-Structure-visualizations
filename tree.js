@@ -262,11 +262,13 @@ class GenericTree {
         }
 
         if (this.deletedNode != null)
-            this.deletedNode.relocateSubtree(width/2, height + this.s);
+            this.deletedNode.relocateSubtree(width/2, height + this.s, 0);
     }
 
-    resize(size)
-    {   this.ns = size;   }
+    resize(size) {
+        this.ns = size;
+        this.relocate();
+    }
 }
 
 class AVLTree extends GenericTree {
