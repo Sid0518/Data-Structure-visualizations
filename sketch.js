@@ -1,8 +1,4 @@
 let treeType = 'RB';  // set this to AVL or RB
-
-let width, height;
-let borderX, borderY;
-
 let tree = null;
 
 let level = 5;
@@ -10,16 +6,16 @@ let gap = 10;
 let size, levelGap;
 
 let rx, ry, rwidth;
+let borderX, borderY;
 
 let FPS = 60;
 
-let insertButton, removeButton;
+let textBox;
 let buttonEnabled = true;
 
-let textBox;
-
-function clearTree()
-{   tree.root.relocateSubtree(width/2, height + tree.s, width);   }
+function clearTree() {
+    tree.root.relocateSubtree(width/2, height + tree.s, width);   
+}
 
 function selectTree() {
     if (treeType == 'AVL')
@@ -29,6 +25,7 @@ function selectTree() {
 }
 
 function toggleTree() {
+    console.log("Toggle tree");
     if (buttonEnabled) {
         buttonEnabled = false;
 
@@ -52,7 +49,7 @@ function toggleTree() {
 
 function activateButtons() {
     buttonEnabled = true;
-    textBox.elt.focus();
+    textBox.focus();
 }
 
 function performRotations() {
@@ -70,8 +67,8 @@ function insertNode() {
     if (buttonEnabled) {
         buttonEnabled = false;
 
-        let value = parseInt(textBox.value());
-        textBox.value('');
+        let value = parseInt(textBox.value);
+        textBox.value = '';
 
         if (!isNaN(value)) {
             tree.addNode(value);
@@ -93,8 +90,8 @@ function removeNode() {
     if (buttonEnabled) {
         buttonEnabled = false;
 
-        let value = parseInt(textBox.value());
-        textBox.value('');
+        let value = parseInt(textBox.value);
+        textBox.value = '';
 
         if (!isNaN(value)) {
             tree.removeNode(value);
@@ -112,15 +109,9 @@ function removeNode() {
     }
 }
 
-function setup() {
-    width = windowWidth;
-    height = windowHeight;
-    createCanvas(width, height);
-
+function init() {
     borderX = 0.025 * width;
     borderY = 0.025 * height;
-
-    textAlign(CENTER, CENTER);
 
     let n = Math.pow(2, level - 1);
     size = ((width - 2*borderX) - (n - 1) * gap) / n;
@@ -130,37 +121,30 @@ function setup() {
     ry = (borderY + levelGap + size/2);
     rwidth = (width - 2*borderX);
 
-    selectTree();
-
-    toggleButton = createButton('Change Tree');
-    insertButton = createButton('Insert');
-    removeButton = createButton('Remove');
-    textBox = createInput();
-
-    let elements = [toggleButton, textBox, insertButton, removeButton];
-
-    let W = 0.4 * width;
-    let w = 2*W / (3*elements.length + 1);
-    let h = levelGap - borderY;
-
-    let x = (width - W + w)/2;
-    let y = borderY;
-
-    for (let element of elements) {
-        element.size(w, h);
-        element.position(x, y);
-        element.style('font-size', h/5 + 'px');
-        element.style('text-align', 'center');
-
-        x += 1.5*w;
+    if(tree !== null) {
+        tree.relocate();
+        tree.resize(size);
     }
+}
 
-    toggleButton.mousePressed(toggleTree);
-    insertButton.mousePressed(insertNode);
-    removeButton.mousePressed(removeNode);
-    textBox.elt.focus();
-
+function setup() {
+    const canvas = createCanvas(windowWidth, windowHeight);
+    canvas.position(0, 0);
+    canvas.style("z-index", "-1");
+    
+    textAlign(CENTER, CENTER);
     frameRate(FPS);
+
+    textBox = document.querySelector("#input");
+    textBox.focus();
+
+    init();
+    selectTree();
+}
+
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+    init();
 }
 
 function draw() {
@@ -180,4 +164,10 @@ function draw() {
 
     tree.update();
     tree.display();
+}
+
+function submitForm(event) {
+    event.preventDefault();
+    insertNode();
+    return false;
 }

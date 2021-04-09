@@ -242,7 +242,7 @@ class GenericTree {
     }
 
     update() {
-        this.s = lerp(this.s, this.ns, 0.05);
+        this.s = lerp(this.s, this.ns, 0.2);
 
         if (this.root != null)
             this.root.update();

@@ -26,8 +26,8 @@ class GenericNode {
     }
 
     update() {
-        this.x = lerp(this.x, this.nx, 0.05);
-        this.y = lerp(this.y, this.ny, 0.05);
+        this.x = lerp(this.x, this.nx, 0.08);
+        this.y = lerp(this.y, this.ny, 0.08);
 
         if (this.left != null)
             this.left.update();
