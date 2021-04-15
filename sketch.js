@@ -23,18 +23,11 @@ function selectTree() {
     }
     else if (treeType === 'RB') {
         tree =  new RedBlackTree(size);
-        if(DARK_MODE)
-            heading.innerHTML = `
-                <span style='color: rgb(255, 23, 68);'>Red</span>
-                <span style='color: black;'><strike>Black</strike></span>
-                White Tree Visualization
-            `;
-        else
-            heading.innerHTML = `
-                <span style='color: rgb(255, 23, 68);'>Red</span>
-                Black Tree Visualization
-            `;
-        changeTreeButton.innerHTML = "Switch to AVL Tree";  
+        heading.innerHTML = `
+            <span style='color: rgb(255, 23, 68);'>Red</span>
+            <span style='color: black;'>Black</span> Tree Visualization
+        `;
+        changeTreeButton.innerHTML = "Switch to AVL Tree";
     }
 
     enableButtons();
@@ -78,13 +71,20 @@ function enableButtons() {
     }
 }
 
+function updateDisplayHeight() {    
+    level = max(5, tree.displayHeight);;
+    init();
+}
+
 function continueOperation() {
     tree.relocate();
     tree.removeRedundantRotations();
     if (tree.hasPendingRotations())
         window.setTimeout(performRotations, 1000);
-    else
+    else {
+        updateDisplayHeight();
         window.setTimeout(enableButtons, 1000);
+    }
 }
 
 function performRotations() {
@@ -188,19 +188,13 @@ function windowResized() {
 function draw() {
     background(DARK_MODE ? 51 : 245);
 
-    let newLevel = max(5, tree.displayHeight);
-    if (level !== newLevel) {
-        level = newLevel;
-        init();
-    }
-
     tree.update();
     tree.display();
 
     if(autoInsert && buttonsEnabled) {
         buttonsEnabled = false;
 
-        const value = -100 + Math.round(Math.random() * 200);
+        const value = 1 + Math.round(Math.random() * 200);
         tree.addNode(value);
         continueOperation();
     }
