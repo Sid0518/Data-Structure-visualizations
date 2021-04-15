@@ -141,15 +141,22 @@ class RedBlackNode extends GenericNode {
     {   console.log('RedBlackNode:', this.value, this.colour);  }
 
     display(size) {
-        stroke(this.colour);
+        const colour = 
+            (this.colour === RED) ? 
+                [255, 23, 68, 255] :
+                DARK_MODE ? 
+                    [245, 245, 245, 255] : 
+                    [0, 0, 0, 255]
 
-        fill(this.colour);
+        stroke(colour);
+
+        fill(colour);
         circle(this.x, this.y, size);
         fill(DARK_MODE ? 51 : 245);
         circle(this.x, this.y, size*0.95);
 
-        fill(this.colour);
-        stroke(this.colour);
+        fill(colour);
+        stroke(colour);
         strokeWeight(1);
         textSize(size / 2);
 

@@ -23,11 +23,17 @@ function selectTree() {
     }
     else if (treeType === 'RB') {
         tree =  new RedBlackTree(size);
-        heading.innerHTML = `
-            <span style='color: rgb(255, 23, 68);'>Red</span>
-            <span style='color: black;'><strike>Black</strike></span>
-            White Tree Visualization
-        `;
+        if(DARK_MODE)
+            heading.innerHTML = `
+                <span style='color: rgb(255, 23, 68);'>Red</span>
+                <span style='color: black;'><strike>Black</strike></span>
+                White Tree Visualization
+            `;
+        else
+            heading.innerHTML = `
+                <span style='color: rgb(255, 23, 68);'>Red</span>
+                Black Tree Visualization
+            `;
         changeTreeButton.innerHTML = "Switch to AVL Tree";  
     }
 
@@ -168,13 +174,6 @@ function setup() {
 
     const textBox = document.querySelector("#input");
     textBox.focus();
-
-    if(DARK_MODE) {
-        const body = document.querySelector("body");
-        for(const id of inputIds)
-            document.getElementById(id).classList.add("dark-input");
-        body.classList.add("dark-body");
-    }
 
     init();
     selectTree();
