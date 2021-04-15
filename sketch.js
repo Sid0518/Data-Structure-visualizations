@@ -19,7 +19,12 @@ function selectTree() {
     if (treeType === 'AVL') {
         tree = new AVLTree(size);
         heading.innerHTML = "AVL Tree Visualization";
-        changeTreeButton.innerHTML = "Switch to Red-Black Tree";
+        changeTreeButton.innerHTML = `
+            Switch to 
+            <span style='color: rgb(255, 23, 68);'>Red</span>
+            <span style='color: black;'>Black</span> 
+            Tree
+        `;
     }
     else if (treeType === 'RB') {
         tree =  new RedBlackTree(size);
