@@ -81,15 +81,15 @@ class GenericNode {
     }
 
     display(size) {
-        stroke(0);
+        stroke(250);
 
-        fill(0);
+        fill(250);
         circle(this.x, this.y, size);
-        fill(255);
+        fill(51);
         circle(this.x, this.y, size*0.95);
 
-        fill(0);
-        stroke(0);
+        fill(250);
+        stroke(250);
         strokeWeight(1);
         
         textSize(size / 2);
@@ -97,13 +97,13 @@ class GenericNode {
     }
 
     displaySubtree(size) {
-        stroke(0);
+        stroke(DARK_MODE ? 245 : 51);
         if (this.left != null) {
             line(this.x, this.y, this.left.x, this.left.y);
             this.left.displaySubtree(size);
         }
-
-        stroke(0);
+        
+        stroke(DARK_MODE ? 245 : 51);
         if (this.right != null) {
             line(this.x, this.y, this.right.x, this.right.y);
             this.right.displaySubtree(size);
@@ -141,15 +141,15 @@ class RedBlackNode extends GenericNode {
     {   console.log('RedBlackNode:', this.value, this.colour);  }
 
     display(size) {
-        stroke(this.colour, 0, 0);
+        stroke(this.colour);
 
-        fill(this.colour, 0, 0);
+        fill(this.colour);
         circle(this.x, this.y, size);
-        fill(255);
+        fill(DARK_MODE ? 51 : 245);
         circle(this.x, this.y, size*0.95);
 
-        fill(this.colour, 0, 0);
-        stroke(this.colour, 0, 0);
+        fill(this.colour);
+        stroke(this.colour);
         strokeWeight(1);
         textSize(size / 2);
 

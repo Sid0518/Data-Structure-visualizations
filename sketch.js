@@ -3,9 +3,7 @@ let tree = null;
 
 let level = 5;
 let size, levelGap;
-
 let rx, ry, rwidth;
-let FPS = 60;
 
 let buttonsEnabled = true;
 let autoInsert = false;
@@ -25,7 +23,11 @@ function selectTree() {
     }
     else if (treeType === 'RB') {
         tree =  new RedBlackTree(size);
-        heading.innerHTML = "Red-Black Tree Visualization";
+        heading.innerHTML = `
+            <span style='color: rgb(255, 23, 68);'>Red</span>
+            <span style='color: black;'><strike>Black</strike></span>
+            White Tree Visualization
+        `;
         changeTreeButton.innerHTML = "Switch to AVL Tree";  
     }
 
@@ -51,10 +53,10 @@ function toggleTree() {
     }
 }
 
-const buttonIds = ["toggle", "input", "insert", "delete", "auto"];
+const inputIds = ["toggle", "input", "insert", "delete", "auto"];
 function disableButtons() {
     buttonsEnabled = false;
-    for(const id of buttonIds)
+    for(const id of inputIds)
         document.getElementById(id).disabled = true;
 }
 
@@ -62,7 +64,7 @@ function enableButtons() {
     buttonsEnabled = true;
 
     if(!autoInsert) {
-        for(const id of buttonIds)
+        for(const id of inputIds)
             document.getElementById(id).disabled = false;
 
         const textBox = document.querySelector("#input");
@@ -167,6 +169,13 @@ function setup() {
     const textBox = document.querySelector("#input");
     textBox.focus();
 
+    if(DARK_MODE) {
+        const body = document.querySelector("body");
+        for(const id of inputIds)
+            document.getElementById(id).classList.add("dark-input");
+        body.classList.add("dark-body");
+    }
+
     init();
     selectTree();
 }
@@ -178,7 +187,7 @@ function windowResized() {
 }
 
 function draw() {
-    background(255);
+    background(DARK_MODE ? 51 : 245);
 
     let newLevel = max(5, tree.displayHeight);
     if (level !== newLevel) {

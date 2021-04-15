@@ -1,5 +1,5 @@
-let RED = 255;
-let BLACK = 0;
+let RED = [255, 23, 68, 255]; // RGBA color
+let BLACK = DARK_MODE ? [245, 245, 245, 255] : [0, 0, 0, 255]; // RGBA color
 
 let LEFT = 0;
 let RIGHT = 1;

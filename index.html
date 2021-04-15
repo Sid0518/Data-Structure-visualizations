@@ -19,27 +19,62 @@
       }
 
       body {
-        overflow-x: hidden;
+        background-color: whitesmoke;
+        color: rgb(51, 51, 51);
+      }
+
+      .dark-body {
+        background-color: rgb(51, 51, 51);
+        color: whitesmoke;
       }
 
       #heading {
         height: 10vh;
         padding: 1rem;
         text-align: center;
+        vertical-align: middle;
 
         font-size: 2rem;
-        font-weight: lighter;
+        transition: font-size 200ms;
+        font-weight: normal;
+      }
+
+      @media only screen and (max-width: 576px) {
+        #heading {
+          font-size: 1.75rem;
+        }
       }
 
       button, input {
-        width: fit-content;
         margin: 1rem 0.5rem;
         padding: 1rem;
 
+        background-color: transparent;
+        border: 1px solid rgb(51, 51, 51);
+        color: rgb(51, 51, 51);
+
         text-align: center;
-        font-size: 1.2rem;
+        font-size: 1.4rem;
         
         white-space: nowrap;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      button:hover:enabled, button:focus {
+        border-width: 3px;
+      }
+
+      .dark-input {
+        border: 1px solid whitesmoke;
+        color: whitesmoke;
+      }
+
+      button:disabled, input:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
       }
 
       .buttons {
@@ -50,13 +85,14 @@
         flex-direction: row;
         align-items: center;
         justify-content: center;
-
-        overflow-x: auto;
-        overflow-y: hidden;
       }
 
       #toggle {
         width: 24ch;
+      }
+
+      #insert, #delete {
+        width: 8ch;
       }
 
       #auto {
@@ -97,6 +133,8 @@
   </body>
 
   <script src="p5.js"></script>
+  <script src="settings.js"></script>
+
   <script src="node.js"></script>
   <script src="tree.js"></script>
   <script src="sketch.js"></script>
