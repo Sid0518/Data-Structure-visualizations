@@ -27,6 +27,50 @@ class GenericTree {
             return this.root.height;
     }
 
+    get displayHeight() {
+        if(this.root === null)
+            return 0;
+        
+        let level = 1;
+        let levelNodes = [this.root];
+        while(true) {
+            const n = levelNodes.length;
+            for(let i = 0;i < n - 1;i++) {
+                if((levelNodes[i] !== null && levelNodes[i - 1] !== null)) {
+                    level++;
+                    break;
+                }
+            }
+            
+            let nextLevel  = [];
+            while(levelNodes.length > 0) {
+                const node = levelNodes.shift();
+                if(node === null)
+                    nextLevel.push(null);
+
+                else {
+                    nextLevel.push(node.left);
+                    nextLevel.push(node.right);
+                }
+            }
+
+            let allNull = true;
+            for(const node of nextLevel) {
+                if(node !== null) {
+                    allNull = false;
+                    break;
+                }
+            }
+
+            if(allNull)
+                break;
+            else
+                levelNodes = [...nextLevel];
+        }
+
+        return level;
+    }
+
     invalid(node)
     {   return false;   }
 
@@ -253,7 +297,7 @@ class GenericTree {
     }
 
     updateHeight() {}
-    
+
     relocate() {
         if (this.root != null)
             this.root.relocateSubtree(rx, ry, rwidth);

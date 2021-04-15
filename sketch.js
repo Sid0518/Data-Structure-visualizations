@@ -180,7 +180,7 @@ function windowResized() {
 function draw() {
     background(255);
 
-    let newLevel = max(5, tree.height);
+    let newLevel = max(5, tree.displayHeight);
     if (level !== newLevel) {
         level = newLevel;
         init();
