@@ -60,9 +60,9 @@ class GenericNode {
         let height = 0;
 
         if (this.left != null)
-            height = max(height, this.left.height);
+            height = Math.max(height, this.left.height);
         if (this.right != null)
-            height = max(height, this.right.height);
+            height = Math.max(height, this.right.height);
 
         this.height = 1 + height;
     }
@@ -91,8 +91,8 @@ class GenericNode {
         fill(0);
         stroke(0);
         strokeWeight(1);
+        
         textSize(size / 2);
-
         text(this.value, this.x, this.y);
     }
 
@@ -121,7 +121,7 @@ class AVLNode extends GenericNode {
             delta += this.left.height;
 
         if (this.right != null)
-          delta -= this.right.height;
+            delta -= this.right.height;
 
         return delta;
     }

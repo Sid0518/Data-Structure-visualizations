@@ -10,7 +10,6 @@ let DELETE = 1;
 class GenericTree {
     constructor(size) {
         this.root = null;
-        this.height = 0;
 
         this.s = size;
         this.ns = this.s;
@@ -19,6 +18,13 @@ class GenericTree {
         this.lastOperation = null;
 
         this.deletedNode = null;
+    }
+
+    get height() {
+        if(this.root === null)
+            return 0;
+        else
+            return this.root.height;
     }
 
     invalid(node)
@@ -30,6 +36,7 @@ class GenericTree {
     removeRedundantRotations() {
         while (this.hasPendingRotations()) {
             let node = this.rotations[this.rotations.length - 1];
+            node.updateHeight();
             if (this.invalid(node))
                 break;
             this.rotations.pop();
@@ -74,17 +81,11 @@ class GenericTree {
     addNode(value) {
         this.insert(value);
         this.lastOperation = INSERT;
-        this.height = this.root.height;
     }
 
     removeNode(value) {
         this.delete(value);
         this.lastOperation = DELETE;
-
-        if (this.root != null)
-            this.height = this.root.height;
-        else
-            this.height = 0;
     }
 
     insert(value) {
@@ -251,11 +252,11 @@ class GenericTree {
             this.deletedNode.update();
     }
 
+    updateHeight() {}
+    
     relocate() {
-        if (this.root != null) {
+        if (this.root != null)
             this.root.relocateSubtree(rx, ry, rwidth);
-            this.height = this.root.height;
-        }
 
         if (this.deletedNode != null)
             this.deletedNode.relocateSubtree(width/2, height + this.s, 0);
@@ -276,7 +277,7 @@ class AVLTree extends GenericTree {
 
     applyInsertionFix(node, parent) {
         let delta = node.heightDifference();
-        let rotation_made = (delta > 1 || delta < -1);
+        let rotationMade = (delta > 1 || delta < -1);
 
         if (delta > 1) {
             delta = node.left.heightDifference();
@@ -303,7 +304,7 @@ class AVLTree extends GenericTree {
         node.updateHeight();
         this.joinWithParent(node, parent);
 
-        return rotation_made;
+        return rotationMade;
     }
 }
 
