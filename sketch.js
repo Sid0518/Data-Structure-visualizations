@@ -172,6 +172,7 @@ function setup() {
     const div = document.querySelector("#canvas-wrapper");
     const canvas = createCanvas(div.offsetWidth - 32, div.offsetHeight - 32);
     canvas.parent(div);
+    setTimeout(windowResized, 0); // Nasty hack to fix the incorrect height bug
     
     textAlign(CENTER, CENTER);
     frameRate(FPS);
