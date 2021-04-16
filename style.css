@@ -59,7 +59,10 @@
     transition: font-size 200ms;
       
     white-space: nowrap;
-  }
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
 
   @media only screen and (max-width: 576px) {
     button, input {
@@ -92,6 +95,8 @@
 
   .buttons {
     width: 56ch;
+    max-width: 100vw;
+
     transition: width 200ms;
     
     margin: 1rem auto;
@@ -102,26 +107,20 @@
     justify-content: space-between;
   }
 
-  @media only screen and (max-width: 576px) {
-    .buttons {
-      width: 48ch;
-    }
-  }
-
   #toggle {
-    width: 24ch;
+    width: 55%;
   }
 
   #input {
-    width: 20ch;
+    width: 60%;
   }
 
   #insert, #delete {
-    width: 10ch;
+    width: 20%;
   }
 
   #auto {
-    width: 16ch;
+    width: 45%;
   }
 
   #canvas-wrapper {

@@ -21,8 +21,7 @@ function selectTree() {
         heading.innerHTML = "AVL Tree Visualization";
         changeTreeButton.innerHTML = `
             Switch to 
-            <span style='color: rgb(255, 23, 68);'>Red</span>
-            <span style='color: black;'>Black</span> 
+            <span style='color: rgb(255, 23, 68);'>R</span><span style='color: black;'>B</span> 
             Tree
         `;
     }
