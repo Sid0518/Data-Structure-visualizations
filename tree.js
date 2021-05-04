@@ -221,12 +221,12 @@ class GenericTree {
         }
     }
 
-    joinWithParent(node, parent) {
+    joinWithParent(node, parent, childType) {
         if (parent == null)
             this.root = node;
 
         else {
-            if (node.value < parent.value)
+            if (childType === LEFT || node.value < parent.value)
                 parent.left = node;
             else
                 parent.right = node;
@@ -320,6 +320,14 @@ class AVLTree extends GenericTree {
     {   return abs(node.heightDifference()) > 1;  }
 
     applyInsertionFix(node, parent) {
+        let childType;
+        if (parent) {
+            if (parent.left === node)
+                childType = LEFT;
+            else
+                childType = RIGHT;
+        }
+
         let delta = node.heightDifference();
         let rotationMade = (delta > 1 || delta < -1);
 
@@ -346,7 +354,7 @@ class AVLTree extends GenericTree {
         }
 
         node.updateHeight();
-        this.joinWithParent(node, parent);
+        this.joinWithParent(node, parent, childType);
 
         return rotationMade;
     }
